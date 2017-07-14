@@ -49,6 +49,9 @@ gcloud config set project ${GOOGLE_PROJECT_ID}
 gcloud config set app/promote_by_default false
 gcloud config set verbosity ${CLOUDSDK_VERBOSITY}
 
+# Dump the credentials from the environment variable.
+php scripts/dump_credentials.php
+
 # Set the timeout
 gcloud config set container/build_timeout 3600
 

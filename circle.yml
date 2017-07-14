@@ -7,7 +7,7 @@ machine:
     CLOUDSDK_ACTIVE_CONFIG_NAME: stackdriver-trace-php-extension
     TEST_BUILD_DIR: ${HOME}
     PHP_DOCKER_GOOGLE_CREDENTIALS: ${HOME}/credentials.json
-    GOOGLE_PROJECT_ID: php-mvm-a
+    GOOGLE_PROJECT_ID: php-stackdriver
     TAG: circle-${CIRCLE_BUILD_NUM}
 
 dependencies:

@@ -1,8 +1,8 @@
-# Stackdriver Trace PHP Extension
+# Stackdriver Trace PHP Extension (Alpha)
 
 [Stackdriver Trace](https://cloud.google.com/trace/) is a free, open-source distributed tracing implementation
 based on the [Dapper Paper](https://research.google.com/pubs/pub36356.html).
-This extension allows you to "watch" class methd and function calls in order to
+This extension allows you to "watch" class method and function calls in order to
 automatically collect nested spans (labelled timing data).
 
 This library can optionally work in conjunction with the PHP library

@@ -7,3 +7,7 @@ steps:
     args: ['build', '--build-arg', 'BASE_IMAGE=gcr.io/google-appengine/php70', '.']
     waitFor: ['-']
     id: php70
+  - name: gcr.io/cloud-builders/docker
+    args: ['build', '--build-arg', 'BASE_IMAGE=gcr.io/php-mvm-a/php72:circle-756', '.']
+    waitFor: ['-']
+    id: php72

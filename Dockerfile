@@ -34,5 +34,6 @@ ENV TEST_PHP_ARGS="-q" \
 
 RUN phpize && \
     ./configure --enable-stackdriver-trace && \
+    make clean && \
     make && \
     make test

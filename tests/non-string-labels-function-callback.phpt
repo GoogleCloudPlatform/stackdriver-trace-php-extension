@@ -7,7 +7,7 @@ function foo() {
     return 'bar';
 }
 stackdriver_trace_function('foo', function () {
-    return ['labels' => ['int' => 1, 'float' => 0.1]]
+    return ['labels' => ['int' => 1, 'float' => 0.1]];
 });
 
 foo();

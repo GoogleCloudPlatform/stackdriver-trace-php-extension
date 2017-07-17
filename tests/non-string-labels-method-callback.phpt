@@ -3,16 +3,16 @@ Stackdriver Trace: Test setting labels
 --FILE--
 <?php
 
-class Foo
+class FooClass
 {
     function foo() {
         return 'bar';
     }
 }
-stackdriver_trace_method('Foo', 'foo', function () {
+stackdriver_trace_method('FooClass', 'foo', function () {
     return ['labels' => ['int' => 1, 'float' => 0.1]];
 });
-$foo = new Foo();
+$foo = new FooClass();
 $foo->foo();
 
 $traces = stackdriver_trace_list();

@@ -24,7 +24,7 @@
 #include "php.h"
 #include "stackdriver_trace.h"
 
-#define PHP_STACKDRIVER_TRACE_VERSION "0.1.0"
+#define PHP_STACKDRIVER_TRACE_VERSION "0.1.1"
 #define PHP_STACKDRIVER_TRACE_EXTNAME "stackdriver_trace"
 
 #define PHP_STACKDRIVER_MAKE_STD_ZVAL(pzv) \

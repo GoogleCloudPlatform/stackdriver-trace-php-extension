@@ -29,7 +29,7 @@ This extension has been built and tested on the following PHP versions:
 1. [Download a release](https://github.com/GoogleCloudPlatform/stackdriver-trace-php-extension/releases)
 
    ```bash
-   curl https://github.com/GoogleCloudPlatform/stackdriver-trace-php-extension/archive/v0.1.0.tar.gz -o trace.tar.gz
+   curl https://github.com/GoogleCloudPlatform/stackdriver-trace-php-extension/archive/v0.1.1.tar.gz -o trace.tar.gz
    ```
 
 1. Untar the package
@@ -41,7 +41,7 @@ This extension has been built and tested on the following PHP versions:
 1. Go to the extension directory
 
    ```bash
-   cd stackdriver-trace-php-extension-0.1.0
+   cd stackdriver-trace-php-extension-0.1.1
    ```
 
 1. Compile the extension

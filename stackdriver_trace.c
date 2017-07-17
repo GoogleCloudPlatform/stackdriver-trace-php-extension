@@ -21,6 +21,10 @@
 #include "Zend/zend_closures.h"
 #include "zend_extensions.h"
 
+#if PHP_VERSION_ID < 70100
+#include "standard/php_rand.h"
+#endif
+
 // True global for storing the original zend_execute_ex function pointer
 void (*original_zend_execute_ex) (zend_execute_data *execute_data);
 void (*original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
@@ -243,6 +247,12 @@ static stackdriver_trace_span_t *stackdriver_trace_begin(zend_string *function_n
 
     span->start = stackdriver_trace_now();
     span->name = zend_string_copy(function_name);
+
+#if PHP_VERSION_ID < 70100
+    if (!BG(mt_rand_is_seeded)) {
+        php_mt_srand(GENERATE_SEED());
+    }
+#endif
     span->span_id = php_mt_rand();
 
     if (STACKDRIVER_TRACE_G(current_span)) {

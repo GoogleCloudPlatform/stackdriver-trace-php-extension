@@ -29,7 +29,8 @@ COPY . /build/
 
 WORKDIR /build
 
-ENV PHP_TEST_ARGS="-q"
+ENV TEST_PHP_ARGS="-q" \
+    REPORT_EXIT_STATUS=1
 
 RUN phpize && \
     ./configure --enable-stackdriver-trace && \

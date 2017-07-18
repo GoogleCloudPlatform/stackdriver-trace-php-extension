@@ -15,7 +15,6 @@
  */
 
 #include "php_stackdriver_trace.h"
-#include <sys/time.h>
 #include "stackdriver_trace.h"
 #include "Zend/zend_compile.h"
 #include "Zend/zend_closures.h"
@@ -23,6 +22,12 @@
 
 #if PHP_VERSION_ID < 70100
 #include "standard/php_rand.h"
+#endif
+
+#ifdef _WIN32
+#include "win32/time.h"
+#else
+#include <sys/time.h>
 #endif
 
 // True global for storing the original zend_execute_ex function pointer

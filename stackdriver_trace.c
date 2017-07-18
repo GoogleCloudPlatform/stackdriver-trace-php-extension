@@ -567,28 +567,6 @@ PHP_FUNCTION(stackdriver_trace_method)
     RETURN_FALSE;
 }
 
-// Given a HashTable of labels, write the values into the provided pointer of the label_array
-static int stackdriver_labels_to_zval_array(HashTable *ht, zval *label_array)
-{
-    ulong idx;
-    zend_string *k;
-    zval *v;
-    HashTable *label_ht;
-
-    array_init(label_array);
-    label_ht = Z_ARRVAL_P(label_array);
-
-    ZEND_HASH_FOREACH_KEY_VAL(ht, idx, k, v) {
-        if (add_assoc_zval(label_array, ZSTR_VAL(k), v) != SUCCESS) {
-            php_prinf("failed to add_assoc_zval\n");
-            return FAILURE;
-        }
-
-    } ZEND_HASH_FOREACH_END();
-
-    return SUCCESS;
-}
-
 /**
  * Return the collected list of trace spans that have been collected for this request
  *
@@ -616,10 +594,7 @@ PHP_FUNCTION(stackdriver_trace_list)
         zend_update_property_double(stackdriver_trace_span_ce, &spans[i], "startTime", sizeof("startTime") - 1, trace_span->start);
         zend_update_property_double(stackdriver_trace_span_ce, &spans[i], "endTime", sizeof("endTime") - 1, trace_span->stop);
 
-        array_init(&labels[i]);
-        if (trace_span->labels) {
-            stackdriver_labels_to_zval_array(trace_span->labels, &labels[i]);
-        }
+        ZVAL_ARR(&labels[i], trace_span->labels);
         zend_update_property(stackdriver_trace_span_ce, &spans[i], "labels", sizeof("labels") - 1, &labels[i]);
 
         add_next_index_zval(return_value, &spans[i]);

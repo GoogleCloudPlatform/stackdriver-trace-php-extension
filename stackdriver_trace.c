@@ -365,7 +365,6 @@ PHP_FUNCTION(stackdriver_trace_finish)
 // Reset the list of spans and free any allocated memory used
 static void stackdriver_trace_clear(int reset TSRMLS_DC)
 {
-    int i;
     stackdriver_trace_span_t *span;
 
     // free memory for all captured spans
@@ -551,7 +550,6 @@ PHP_FUNCTION(stackdriver_trace_function)
  */
 PHP_FUNCTION(stackdriver_trace_method)
 {
-    zend_function *fe;
     zend_string *class_name, *function_name, *key;
     zval *handler, *copy;
 

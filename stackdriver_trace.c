@@ -261,7 +261,7 @@ static stackdriver_trace_span_t *stackdriver_trace_begin(zend_string *function_n
         php_mt_srand(GENERATE_SEED());
     }
 #endif
-    span->span_id = php_mt_rand();
+    span->span_id = (php_mt_rand() >> 1);
 
     if (STACKDRIVER_TRACE_G(current_span)) {
         span->parent = STACKDRIVER_TRACE_G(current_span);

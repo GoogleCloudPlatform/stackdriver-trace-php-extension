@@ -171,7 +171,7 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
     int i, num_args = EX_NUM_ARGS(), has_scope = 0;
     zend_fcall_info fci;
     zend_fcall_info_cache fcc;
-    zval args[num_args + 1];
+    zval *args = emalloc((num_args + 1) * sizeof(zval));
 
     if (getThis() == NULL) {
         ZVAL_NULL(&args[0]);
@@ -193,6 +193,7 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
             NULL
             TSRMLS_CC
         ) != SUCCESS) {
+        efree(args);
         return FAILURE;
     };
 
@@ -205,8 +206,10 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
     fcc.initialized = 1;
 
     if (zend_call_function(&fci, &fcc TSRMLS_CC) != SUCCESS) {
+        efree(args);
         return FAILURE;
     }
+    efree(args);
 
     if (EG(exception) != NULL) {
         return FAILURE;
@@ -599,7 +602,8 @@ PHP_FUNCTION(stackdriver_trace_list)
     int i = 0;
     stackdriver_trace_span_t *trace_span;
     int num_spans = STACKDRIVER_TRACE_G(spans)->nNumUsed;
-    zval labels[num_spans], spans[num_spans];
+    zval *labels = emalloc(num_spans * sizeof(zval));
+    zval *spans = emalloc(num_spans * sizeof(zval));
 
     // Set up return value to be an array of size num_spans
     array_init(return_value);
@@ -626,6 +630,9 @@ PHP_FUNCTION(stackdriver_trace_list)
 
         i++;
     } ZEND_HASH_FOREACH_END();
+
+    efree(labels);
+    efree(spans);
 }
 
 // Constructor used for creating the stackdriver globals

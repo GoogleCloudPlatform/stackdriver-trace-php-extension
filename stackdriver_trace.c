@@ -586,7 +586,6 @@ static int stackdriver_labels_to_zval_array(HashTable *ht, zval *label_array)
 
     ZEND_HASH_FOREACH_KEY_VAL(ht, idx, k, v) {
         if (add_assoc_zval(label_array, ZSTR_VAL(k), v) != SUCCESS) {
-            php_prinf("failed to add_assoc_zval\n");
             return FAILURE;
         }
 

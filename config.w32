@@ -1,0 +1,9 @@
+// $Id$
+// vim:ft=javascript
+
+ARG_ENABLE("stackdriver-trace", "stackdriver_trace support", "no");
+
+if (PHP_STACKDRIVER_TRACE != "no") {
+    EXTENSION('stackdriver_trace', 'stackdriver_trace.c stackdriver_trace_context.c stackdriver_trace_span.c');
+    AC_DEFINE('HAVE_STACKDRIVER_TRACE', 1);
+}

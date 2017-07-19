@@ -15,7 +15,6 @@
  */
 
 #include "php_stackdriver_trace.h"
-#include <sys/time.h>
 #include "stackdriver_trace.h"
 #include "Zend/zend_compile.h"
 #include "Zend/zend_closures.h"
@@ -23,6 +22,12 @@
 
 #if PHP_VERSION_ID < 70100
 #include "standard/php_rand.h"
+#endif
+
+#ifdef _WIN32
+#include "win32/time.h"
+#else
+#include <sys/time.h>
 #endif
 
 // True global for storing the original zend_execute_ex function pointer
@@ -171,7 +176,7 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
     int i, num_args = EX_NUM_ARGS(), has_scope = 0;
     zend_fcall_info fci;
     zend_fcall_info_cache fcc;
-    zval args[num_args + 1];
+    zval *args = emalloc((num_args + 1) * sizeof(zval));
 
     if (getThis() == NULL) {
         ZVAL_NULL(&args[0]);
@@ -193,6 +198,7 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
             NULL
             TSRMLS_CC
         ) != SUCCESS) {
+        efree(args);
         return FAILURE;
     };
 
@@ -205,8 +211,10 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
     fcc.initialized = 1;
 
     if (zend_call_function(&fci, &fcc TSRMLS_CC) != SUCCESS) {
+        efree(args);
         return FAILURE;
     }
+    efree(args);
 
     if (EG(exception) != NULL) {
         return FAILURE;
@@ -253,7 +261,7 @@ static stackdriver_trace_span_t *stackdriver_trace_begin(zend_string *function_n
         php_mt_srand(GENERATE_SEED());
     }
 #endif
-    span->span_id = php_mt_rand();
+    span->span_id = (php_mt_rand() >> 1);
 
     if (STACKDRIVER_TRACE_G(current_span)) {
         span->parent = STACKDRIVER_TRACE_G(current_span);
@@ -357,7 +365,6 @@ PHP_FUNCTION(stackdriver_trace_finish)
 // Reset the list of spans and free any allocated memory used
 static void stackdriver_trace_clear(int reset TSRMLS_DC)
 {
-    int i;
     stackdriver_trace_span_t *span;
 
     // free memory for all captured spans
@@ -543,7 +550,6 @@ PHP_FUNCTION(stackdriver_trace_function)
  */
 PHP_FUNCTION(stackdriver_trace_method)
 {
-    zend_function *fe;
     zend_string *class_name, *function_name, *key;
     zval *handler, *copy;
 

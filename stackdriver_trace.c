@@ -573,27 +573,6 @@ PHP_FUNCTION(stackdriver_trace_method)
     RETURN_FALSE;
 }
 
-// Given a HashTable of labels, write the values into the provided pointer of the label_array
-static int stackdriver_labels_to_zval_array(HashTable *ht, zval *label_array)
-{
-    ulong idx;
-    zend_string *k;
-    zval *v;
-    HashTable *label_ht;
-
-    array_init(label_array);
-    label_ht = Z_ARRVAL_P(label_array);
-
-    ZEND_HASH_FOREACH_KEY_VAL(ht, idx, k, v) {
-        if (add_assoc_zval(label_array, ZSTR_VAL(k), v) != SUCCESS) {
-            return FAILURE;
-        }
-
-    } ZEND_HASH_FOREACH_END();
-
-    return SUCCESS;
-}
-
 /**
  * Return the collected list of trace spans that have been collected for this request
  *
@@ -601,40 +580,28 @@ static int stackdriver_labels_to_zval_array(HashTable *ht, zval *label_array)
  */
 PHP_FUNCTION(stackdriver_trace_list)
 {
-    int i = 0;
     stackdriver_trace_span_t *trace_span;
-    int num_spans = STACKDRIVER_TRACE_G(spans)->nNumUsed;
-    zval *labels = emalloc(num_spans * sizeof(zval));
-    zval *spans = emalloc(num_spans * sizeof(zval));
+    zval label, span;
 
-    // Set up return value to be an array of size num_spans
     array_init(return_value);
 
     ZEND_HASH_FOREACH_PTR(STACKDRIVER_TRACE_G(spans), trace_span) {
-        object_init_ex(&spans[i], stackdriver_trace_span_ce);
-        zend_update_property_long(stackdriver_trace_span_ce, &spans[i], "spanId", sizeof("spanId") - 1, trace_span->span_id);
+        object_init_ex(&span, stackdriver_trace_span_ce);
+        zend_update_property_long(stackdriver_trace_span_ce, &span, "spanId", sizeof("spanId") - 1, trace_span->span_id);
         if (trace_span->parent) {
-            zend_update_property_long(stackdriver_trace_span_ce, &spans[i], "parentSpanId", sizeof("parentSpanId") - 1, trace_span->parent->span_id);
+            zend_update_property_long(stackdriver_trace_span_ce, &span, "parentSpanId", sizeof("parentSpanId") - 1, trace_span->parent->span_id);
         } else if (STACKDRIVER_TRACE_G(trace_parent_span_id)) {
-            zend_update_property_long(stackdriver_trace_span_ce, &spans[i], "parentSpanId", sizeof("parentSpanId") - 1, STACKDRIVER_TRACE_G(trace_parent_span_id));
+            zend_update_property_long(stackdriver_trace_span_ce, &span, "parentSpanId", sizeof("parentSpanId") - 1, STACKDRIVER_TRACE_G(trace_parent_span_id));
         }
-        zend_update_property_str(stackdriver_trace_span_ce, &spans[i], "name", sizeof("name") - 1, trace_span->name);
-        zend_update_property_double(stackdriver_trace_span_ce, &spans[i], "startTime", sizeof("startTime") - 1, trace_span->start);
-        zend_update_property_double(stackdriver_trace_span_ce, &spans[i], "endTime", sizeof("endTime") - 1, trace_span->stop);
+        zend_update_property_str(stackdriver_trace_span_ce, &span, "name", sizeof("name") - 1, trace_span->name);
+        zend_update_property_double(stackdriver_trace_span_ce, &span, "startTime", sizeof("startTime") - 1, trace_span->start);
+        zend_update_property_double(stackdriver_trace_span_ce, &span, "endTime", sizeof("endTime") - 1, trace_span->stop);
 
-        array_init(&labels[i]);
-        if (trace_span->labels) {
-            stackdriver_labels_to_zval_array(trace_span->labels, &labels[i]);
-        }
-        zend_update_property(stackdriver_trace_span_ce, &spans[i], "labels", sizeof("labels") - 1, &labels[i]);
+        ZVAL_ARR(&label, trace_span->labels);
+        zend_update_property(stackdriver_trace_span_ce, &span, "labels", sizeof("labels") - 1, &label);
 
-        add_next_index_zval(return_value, &spans[i]);
-
-        i++;
+        add_next_index_zval(return_value, &span);
     } ZEND_HASH_FOREACH_END();
-
-    efree(labels);
-    efree(spans);
 }
 
 // Constructor used for creating the stackdriver globals

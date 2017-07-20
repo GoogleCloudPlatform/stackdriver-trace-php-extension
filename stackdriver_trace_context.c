@@ -104,7 +104,7 @@ static PHP_METHOD(StackdriverTraceContext, traceId) {
     RETURN_ZVAL(val, 1, 0);
 }
 
-// Declare method entries for the Stackdriver\Trace\Context class
+/* Declare method entries for the Stackdriver\Trace\Context class */
 static zend_function_entry stackdriver_trace_context_methods[] = {
     PHP_ME(StackdriverTraceContext, __construct, arginfo_StackdriverTraceContext_construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(StackdriverTraceContext, spanId, NULL, ZEND_ACC_PUBLIC)
@@ -112,7 +112,7 @@ static zend_function_entry stackdriver_trace_context_methods[] = {
     PHP_FE_END
 };
 
-// Module init handler for registering the Stackdriver\Trace\Context class
+/* Module init handler for registering the Stackdriver\Trace\Context class */
 int stackdriver_trace_context_minit(INIT_FUNC_ARGS) {
     zend_class_entry ce;
 

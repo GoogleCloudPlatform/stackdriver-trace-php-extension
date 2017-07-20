@@ -30,7 +30,7 @@
 #include <sys/time.h>
 #endif
 
-// True global for storing the original zend_execute_ex function pointer
+/* True globals for storing the original zend_execute_ex and zend_execute_internal function pointers */
 void (*original_zend_execute_ex) (zend_execute_data *execute_data);
 void (*original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
 
@@ -62,7 +62,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_stackdriver_trace_add_label, 0, 0, 2)
     ZEND_ARG_TYPE_INFO(0, value, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-// List of functions provided by this extension
+/* List of functions provided by this extension */
 static zend_function_entry stackdriver_trace_functions[] = {
     PHP_FE(stackdriver_trace_version, NULL)
     PHP_FE(stackdriver_trace_function, arginfo_stackdriver_trace_function)
@@ -78,7 +78,7 @@ static zend_function_entry stackdriver_trace_functions[] = {
     PHP_FE_END
 };
 
-// Registers the lifecycle hooks for this extension
+/* Registers the lifecycle hooks for this extension */
 zend_module_entry stackdriver_trace_module_entry = {
     STANDARD_MODULE_HEADER,
     PHP_STACKDRIVER_TRACE_EXTNAME,
@@ -87,7 +87,7 @@ zend_module_entry stackdriver_trace_module_entry = {
     PHP_MSHUTDOWN(stackdriver_trace),
     PHP_RINIT(stackdriver_trace),
     PHP_RSHUTDOWN(stackdriver_trace),
-    NULL, // name of the MINFO function or NULL if not applicable
+    NULL, /* name of the MINFO function or NULL if not applicable */
     PHP_STACKDRIVER_TRACE_VERSION,
     STANDARD_MODULE_PROPERTIES
 };
@@ -151,7 +151,7 @@ PHP_FUNCTION(stackdriver_trace_add_root_label)
         RETURN_FALSE;
     }
 
-    // fetch the first span
+    /* fetch the first span */
     span = Z_PTR(STACKDRIVER_TRACE_G(spans)->arData->val);
 
     if (stackdriver_trace_span_add_label(span, k, v) == SUCCESS) {
@@ -161,7 +161,7 @@ PHP_FUNCTION(stackdriver_trace_add_root_label)
     RETURN_FALSE;
 }
 
-// Return the current timestamp as a double
+/* Return the current timestamp as a double */
 static double stackdriver_trace_now()
 {
     struct timeval tv;
@@ -170,7 +170,7 @@ static double stackdriver_trace_now()
     return (double) (tv.tv_sec + tv.tv_usec / 1000000.00);
 }
 
-// Call the provided Closure with the provided parameters to the traced function
+/* Call the provided Closure with the provided parameters to the traced function */
 static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data, stackdriver_trace_span_t *span, zval *closure, zval *closure_result TSRMLS_DC)
 {
     int i, num_args = EX_NUM_ARGS(), has_scope = 0;
@@ -221,7 +221,7 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
     }
 
     if (Z_TYPE_P(closure_result) != IS_ARRAY) {
-        // only raise the warning if the closure succeeded
+        /* only raise the warning if the closure succeeded */
         php_error_docref(NULL, E_WARNING, "Trace callback should return array");
         return FAILURE;
     }
@@ -248,7 +248,7 @@ static void stackdriver_trace_execute_callback(stackdriver_trace_span_t *span, z
     }
 }
 
-// Start a new trace span. Inherit the parent span id from the curernt trace context.
+/* Start a new trace span. Inherit the parent span id from the current trace context */
 static stackdriver_trace_span_t *stackdriver_trace_begin(zend_string *function_name, zend_execute_data *execute_data TSRMLS_DC)
 {
     stackdriver_trace_span_t *span = stackdriver_trace_span_alloc();
@@ -271,13 +271,13 @@ static stackdriver_trace_span_t *stackdriver_trace_begin(zend_string *function_n
     zval ptr;
     ZVAL_PTR(&ptr, span);
 
-    // add the span to the list of spans
+    /* add the span to the list of spans */
     zend_hash_next_index_insert(STACKDRIVER_TRACE_G(spans), &ptr);
 
     return span;
 }
 
-// Finish the current trace span. Set the new current trace span to this span's parent if there is one.
+/* Finish the current trace span. Set the new current trace span to this span's parent if there is one */
 static int stackdriver_trace_finish()
 {
     stackdriver_trace_span_t *span = STACKDRIVER_TRACE_G(current_span);
@@ -286,7 +286,7 @@ static int stackdriver_trace_finish()
         return FAILURE;
     }
 
-    // set current time for now
+    /* set current time for now */
     span->stop = stackdriver_trace_now();
 
     STACKDRIVER_TRACE_G(current_span) = span->parent;
@@ -294,7 +294,7 @@ static int stackdriver_trace_finish()
     return SUCCESS;
 }
 
-// Given a class name and a function name, return a new string that represents the function name
+/* Given a class name and a function name, return a new string that represents the function name */
 static zend_string *stackdriver_trace_generate_class_name(zend_string *class_name, zend_string *function_name)
 {
     int len = class_name->len + function_name->len + 2;
@@ -306,7 +306,7 @@ static zend_string *stackdriver_trace_generate_class_name(zend_string *class_nam
     return result;
 }
 
-// Prepend the name of the scope class to the function name
+/* Prepend the name of the scope class to the function name */
 static zend_string *stackdriver_trace_add_scope_name(zend_string *function_name, zend_class_entry *scope)
 {
     zend_string *result;
@@ -362,20 +362,23 @@ PHP_FUNCTION(stackdriver_trace_finish)
     RETURN_FALSE;
 }
 
-// Reset the list of spans and free any allocated memory used
+/**
+ * Reset the list of spans and free any allocated memory used.
+ * If reset is set, reallocate request globals so we can start capturing spans.
+ */
 static void stackdriver_trace_clear(int reset TSRMLS_DC)
 {
     stackdriver_trace_span_t *span;
 
-    // free memory for all captured spans
+    /* free memory for all captured spans */
     ZEND_HASH_FOREACH_PTR(STACKDRIVER_TRACE_G(spans), span) {
         stackdriver_trace_span_free(span);
     } ZEND_HASH_FOREACH_END();
 
-    // free the hashtable
+    /* free the hashtable */
     FREE_HASHTABLE(STACKDRIVER_TRACE_G(spans));
 
-    // reallocate and setup the hashtable for captured spans
+    /* reallocate and setup the hashtable for captured spans */
     if (reset) {
         ALLOC_HASHTABLE(STACKDRIVER_TRACE_G(spans));
         zend_hash_init(STACKDRIVER_TRACE_G(spans), 16, NULL, ZVAL_PTR_DTOR, 0);
@@ -504,7 +507,7 @@ void stackdriver_trace_execute_internal(INTERNAL_FUNCTION_PARAMETERS)
         } else {
             resume_execute_internal(INTERNAL_FUNCTION_PARAM_PASSTHRU);
         }
-        // zend_string_release(function_name);
+        /* zend_string_release(function_name); */
     } else {
         resume_execute_internal(INTERNAL_FUNCTION_PARAM_PASSTHRU);
     }
@@ -532,7 +535,7 @@ PHP_FUNCTION(stackdriver_trace_function)
         handler = &h;
     }
 
-    // Note: this is freed in the RSHUTDOWN
+    /* Note: these is freed in the RSHUTDOWN via stackdriver_trace_clear */
     PHP_STACKDRIVER_MAKE_STD_ZVAL(copy);
     ZVAL_ZVAL(copy, handler, 1, 0);
 
@@ -563,7 +566,7 @@ PHP_FUNCTION(stackdriver_trace_method)
         handler = &h;
     }
 
-    // Note: this is freed in the RSHUTDOWN
+    /* Note: these is freed in the RSHUTDOWN via stackdriver_trace_clear */
     PHP_STACKDRIVER_MAKE_STD_ZVAL(copy);
     ZVAL_ZVAL(copy, handler, 1, 0);
 
@@ -604,7 +607,7 @@ PHP_FUNCTION(stackdriver_trace_list)
     } ZEND_HASH_FOREACH_END();
 }
 
-// Constructor used for creating the stackdriver globals
+/* Constructor used for creating the stackdriver globals */
 static void php_stackdriver_trace_globals_ctor(void *pDest TSRMLS_DC)
 {
     zend_stackdriver_trace_globals *stackdriver_trace_global = (zend_stackdriver_trace_globals *) pDest;
@@ -614,14 +617,14 @@ static void php_stackdriver_trace_globals_ctor(void *pDest TSRMLS_DC)
  */
 PHP_MINIT_FUNCTION(stackdriver_trace)
 {
-    // allocate global request variables
+    /* allocate global request variables */
 #ifdef ZTS
     ts_allocate_id(&stackdriver_trace_globals_id, sizeof(zend_stackdriver_trace_globals), php_stackdriver_trace_globals_ctor, NULL);
 #else
     php_stackdriver_trace_globals_ctor(&php_stackdriver_trace_globals_ctor);
 #endif
 
-    // Save original zend execute functions and use our own to instrument function calls
+    /* Save original zend execute functions and use our own to instrument function calls */
     original_zend_execute_ex = zend_execute_ex;
     zend_execute_ex = stackdriver_trace_execute_ex;
 
@@ -639,7 +642,7 @@ PHP_MINIT_FUNCTION(stackdriver_trace)
  */
 PHP_MSHUTDOWN_FUNCTION(stackdriver_trace)
 {
-    // Put the original zend execute function back.
+    /* Put the original zend execute function back */
     zend_execute_ex = original_zend_execute_ex;
     zend_execute_internal = original_zend_execute_internal;
 
@@ -651,11 +654,11 @@ PHP_MSHUTDOWN_FUNCTION(stackdriver_trace)
  */
 PHP_RINIT_FUNCTION(stackdriver_trace)
 {
-    // initialize storage for user traced functions - per request basis
+    /* initialize storage for user traced functions - per request basis */
     ALLOC_HASHTABLE(STACKDRIVER_TRACE_G(user_traced_functions));
     zend_hash_init(STACKDRIVER_TRACE_G(user_traced_functions), 16, NULL, ZVAL_PTR_DTOR, 0);
 
-    // initialze storage for recorded spans - per request basis
+    /* initialize storage for recorded spans - per request basis */
     ALLOC_HASHTABLE(STACKDRIVER_TRACE_G(spans));
     zend_hash_init(STACKDRIVER_TRACE_G(spans), 16, NULL, ZVAL_PTR_DTOR, 0);
 
@@ -674,7 +677,7 @@ PHP_RSHUTDOWN_FUNCTION(stackdriver_trace)
 
     stackdriver_trace_clear(0 TSRMLS_CC);
 
-    // cleanup user_traced_functions zvals that we copied when registing
+    /* cleanup user_traced_functions zvals that we copied when registing */
     ZEND_HASH_FOREACH_VAL(STACKDRIVER_TRACE_G(user_traced_functions), handler) {
         PHP_STACKDRIVER_FREE_STD_ZVAL(handler);
     } ZEND_HASH_FOREACH_END();

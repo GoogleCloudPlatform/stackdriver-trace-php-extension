@@ -15,7 +15,8 @@
  */
 
 /*
- * This is the implementation of the Stackdriver\Trace\Span class. The PHP equivalent is:
+ * This is the implementation of the Stackdriver\Trace\Span class. The PHP
+ * equivalent is:
  *
  * namespace Stackdriver\Trace;
  *
@@ -196,7 +197,7 @@ static PHP_METHOD(StackdriverTraceSpan, endTime) {
     RETURN_ZVAL(val, 1, 0);
 }
 
-// Declare method entries for the Stackdriver\Trace\Span class
+/* Declare method entries for the Stackdriver\Trace\Span class */
 static zend_function_entry stackdriver_trace_span_methods[] = {
     PHP_ME(StackdriverTraceSpan, __construct, arginfo_StackdriverTraceSpan_construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(StackdriverTraceSpan, name, NULL, ZEND_ACC_PUBLIC)
@@ -208,7 +209,7 @@ static zend_function_entry stackdriver_trace_span_methods[] = {
     PHP_FE_END
 };
 
-// Module init handler for registering the Stackdriver\Trace\Span class
+/* Module init handler for registering the Stackdriver\Trace\Span class */
 int stackdriver_trace_span_minit(INIT_FUNC_ARGS) {
     zend_class_entry ce;
 
@@ -227,9 +228,11 @@ int stackdriver_trace_span_minit(INIT_FUNC_ARGS) {
     return SUCCESS;
 }
 
-// Returns an allocated initialized pointer to a stackdriver_trace_span_t struct
-// Note that you will have to call stackdriver_trace_span_free yourself when it's time to
-// clean up the memory
+/**
+ * Returns an allocated initialized pointer to a stackdriver_trace_span_t struct
+ * Note that you will have to call stackdriver_trace_span_free yourself when
+ * it's time to clean up the memory
+ */
 stackdriver_trace_span_t *stackdriver_trace_span_alloc()
 {
     stackdriver_trace_span_t *span = emalloc(sizeof(stackdriver_trace_span_t));
@@ -243,25 +246,28 @@ stackdriver_trace_span_t *stackdriver_trace_span_alloc()
     return span;
 }
 
-// Frees the memory allocated for this stackdriver_trace_span_t struct and any other allocated objects.
+/**
+ * Frees the memory allocated for this stackdriver_trace_span_t struct and any
+ * other allocated objects. For every call to stackdriver_trace_span_alloc(),
+ * we should be calling stackdriver_trace_span_free()
+ */
 void stackdriver_trace_span_free(stackdriver_trace_span_t *span)
 {
-    // clear any allocated labels
+    /* clear any allocated labels */
     FREE_HASHTABLE(span->labels);
     if (span->name) {
         zend_string_release(span->name);
     }
 
-    // free the trace span
+    /* free the trace span */
     efree(span);
 }
 
-// Add a label to the trace span struct
+/* Add a label to the trace span struct */
 int stackdriver_trace_span_add_label(stackdriver_trace_span_t *span, zend_string *k, zend_string *v)
 {
+    /* put the string value into a zval and save it in the HashTable */
     zval zv;
-
-    // put the string value into a zval and save it in the HashTable
     ZVAL_STRING(&zv, ZSTR_VAL(v));
 
     if (zend_hash_update(span->labels, zend_string_copy(k), &zv) == NULL) {
@@ -271,13 +277,13 @@ int stackdriver_trace_span_add_label(stackdriver_trace_span_t *span, zend_string
     }
 }
 
-// Add a single label to the provided trace span struct
+/* Add a single label to the provided trace span struct */
 int stackdriver_trace_span_add_label_str(stackdriver_trace_span_t *span, char *k, zend_string *v)
 {
     return stackdriver_trace_span_add_label(span, zend_string_init(k, strlen(k), 0), v);
 }
 
-// Update the provided span with the provided zval (array) of span options
+/* Update the provided span with the provided zval (array) of span options */
 int stackdriver_trace_span_apply_span_options(stackdriver_trace_span_t *span, zval *span_options)
 {
     zend_string *k;

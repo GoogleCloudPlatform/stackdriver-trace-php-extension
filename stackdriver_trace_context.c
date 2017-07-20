@@ -15,7 +15,8 @@
  */
 
 /*
- * This is the implementation of the Stackdriver\Trace\Context class. The PHP equivalent is:
+ * This is the implementation of the Stackdriver\Trace\Context class. The PHP
+ * equivalent is:
  *
  * namespace Stackdriver\Trace;
  *

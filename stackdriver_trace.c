@@ -30,7 +30,10 @@
 #include <sys/time.h>
 #endif
 
-/* True globals for storing the original zend_execute_ex and zend_execute_internal function pointers */
+/**
+ * True globals for storing the original zend_execute_ex and
+ * zend_execute_internal function pointers
+ */
 void (*original_zend_execute_ex) (zend_execute_data *execute_data);
 void (*original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
 
@@ -170,7 +173,10 @@ static double stackdriver_trace_now()
     return (double) (tv.tv_sec + tv.tv_usec / 1000000.00);
 }
 
-/* Call the provided Closure with the provided parameters to the traced function */
+/**
+ * Call the provided Closure with the provided parameters to the traced
+ * function. The Closure must return an array or an E_WARNING is raised.
+ */
 static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data, stackdriver_trace_span_t *span, zval *closure, zval *closure_result TSRMLS_DC)
 {
     int i, num_args = EX_NUM_ARGS(), has_scope = 0;
@@ -231,7 +237,8 @@ static int stackdriver_trace_zend_fcall_closure(zend_execute_data *execute_data,
 
 /**
  * Handle the callback for the traced method depending on the type
- * - if the zval is an array, then assume it's the trace span initialization options
+ * - if the zval is an array, then assume it's the trace span initialization
+ *   options
  * - if the zval is a Closure, then execute the closure and take the results as
  *   the trace span initialization options
  */
@@ -248,7 +255,10 @@ static void stackdriver_trace_execute_callback(stackdriver_trace_span_t *span, z
     }
 }
 
-/* Start a new trace span. Inherit the parent span id from the current trace context */
+/**
+ * Start a new trace span. Inherit the parent span id from the current trace
+ * context
+ */
 static stackdriver_trace_span_t *stackdriver_trace_begin(zend_string *function_name, zend_execute_data *execute_data TSRMLS_DC)
 {
     stackdriver_trace_span_t *span = stackdriver_trace_span_alloc();
@@ -277,7 +287,10 @@ static stackdriver_trace_span_t *stackdriver_trace_begin(zend_string *function_n
     return span;
 }
 
-/* Finish the current trace span. Set the new current trace span to this span's parent if there is one */
+/**
+ * Finish the current trace span. Set the new current trace span to this span's
+ * parent if there is one.
+ */
 static int stackdriver_trace_finish()
 {
     stackdriver_trace_span_t *span = STACKDRIVER_TRACE_G(current_span);
@@ -294,7 +307,11 @@ static int stackdriver_trace_finish()
     return SUCCESS;
 }
 
-/* Given a class name and a function name, return a new string that represents the function name */
+/**
+ * Given a class name and a function name, return a new string that represents
+ * the function name. Note that this zend_string should be released when
+ * finished.
+ */
 static zend_string *stackdriver_trace_generate_class_name(zend_string *class_name, zend_string *function_name)
 {
     int len = class_name->len + function_name->len + 2;
@@ -441,8 +458,8 @@ PHP_FUNCTION(stackdriver_trace_context)
 }
 
 /**
- * This method replaces the internal zend_execute_ex method used to dispatch calls
- * to user space code. The original zend_execute_ex method is moved to
+ * This method replaces the internal zend_execute_ex method used to dispatch
+ * calls to user space code. The original zend_execute_ex method is moved to
  * original_zend_execute_ex
  */
 void stackdriver_trace_execute_ex (zend_execute_data *execute_data TSRMLS_DC) {
@@ -483,9 +500,9 @@ static void resume_execute_internal(INTERNAL_FUNCTION_PARAMETERS)
 }
 
 /**
- * This method replaces the internal zend_execute_internal method used to dispatch calls
- * to internal code. The original zend_execute_internal method is moved to
- * original_zend_execute_internal
+ * This method replaces the internal zend_execute_internal method used to
+ * dispatch calls to internal code. The original zend_execute_internal method
+ * is moved to original_zend_execute_internal
  */
 void stackdriver_trace_execute_internal(INTERNAL_FUNCTION_PARAMETERS)
 {
@@ -577,7 +594,8 @@ PHP_FUNCTION(stackdriver_trace_method)
 }
 
 /**
- * Return the collected list of trace spans that have been collected for this request
+ * Return the collected list of trace spans that have been collected for this
+ * request
  *
  * @return Stackdriver\Trace\Span[]
  */
@@ -624,7 +642,10 @@ PHP_MINIT_FUNCTION(stackdriver_trace)
     php_stackdriver_trace_globals_ctor(&php_stackdriver_trace_globals_ctor);
 #endif
 
-    /* Save original zend execute functions and use our own to instrument function calls */
+    /**
+     * Save original zend execute functions and use our own to instrument
+     * function calls
+     */
     original_zend_execute_ex = zend_execute_ex;
     zend_execute_ex = stackdriver_trace_execute_ex;
 

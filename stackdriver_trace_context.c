@@ -61,7 +61,7 @@ static PHP_METHOD(StackdriverTraceContext, __construct) {
     zend_string *k;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &zval_context_options) == FAILURE) {
-        RETURN_FALSE;
+        return;
     }
 
     zend_array *context_options = Z_ARR_P(zval_context_options);

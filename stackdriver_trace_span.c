@@ -85,7 +85,7 @@ static PHP_METHOD(StackdriverTraceSpan, __construct) {
     zend_string *k;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &zval_span_options) == FAILURE) {
-        RETURN_FALSE;
+        return;
     }
 
     zend_array *span_options = Z_ARR_P(zval_span_options);

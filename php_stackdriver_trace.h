@@ -57,9 +57,9 @@ ZEND_END_MODULE_GLOBALS(stackdriver_trace)
 extern ZEND_DECLARE_MODULE_GLOBALS(stackdriver_trace)
 
 #ifdef ZTS
-#define        STACKDRIVER_TRACE_G(v)        TSRMG(stackdriver_trace_globals_id, zend_stackdriver_trace_globals *, v)
+#define STACKDRIVER_TRACE_G(v) TSRMG(stackdriver_trace_globals_id, zend_stackdriver_trace_globals *, v)
 #else
-#define        STACKDRIVER_TRACE_G(v)        (stackdriver_trace_globals.v)
+#define STACKDRIVER_TRACE_G(v) (stackdriver_trace_globals.v)
 #endif
 
 #endif /* PHP_STACKDRIVER_H */

@@ -61,13 +61,15 @@ static PHP_METHOD(StackdriverTraceContext, __construct) {
     ulong idx;
     zend_string *k;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &zval_context_options) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a",
+                              &zval_context_options) == FAILURE) {
         return;
     }
 
     zend_array *context_options = Z_ARR_P(zval_context_options);
     ZEND_HASH_FOREACH_KEY_VAL(context_options, idx, k, v) {
-        zend_update_property(stackdriver_trace_context_ce, getThis(), ZSTR_VAL(k), strlen(ZSTR_VAL(k)), v);
+        zend_update_property(stackdriver_trace_context_ce, getThis(),
+                             ZSTR_VAL(k), strlen(ZSTR_VAL(k)), v);
     } ZEND_HASH_FOREACH_END();
 }
 
@@ -83,7 +85,8 @@ static PHP_METHOD(StackdriverTraceContext, spanId) {
         return;
     }
 
-    val = zend_read_property(stackdriver_trace_context_ce, getThis(), "spanId", sizeof("spanId") - 1, 1, &rv);
+    val = zend_read_property(stackdriver_trace_context_ce, getThis(), "spanId",
+                             sizeof("spanId") - 1, 1, &rv);
 
     RETURN_ZVAL(val, 1, 0);
 }
@@ -100,14 +103,17 @@ static PHP_METHOD(StackdriverTraceContext, traceId) {
         return;
     }
 
-    val = zend_read_property(stackdriver_trace_context_ce, getThis(), "traceId", sizeof("traceId") - 1, 1, &rv);
+    val = zend_read_property(stackdriver_trace_context_ce, getThis(), "traceId",
+                             sizeof("traceId") - 1, 1, &rv);
 
     RETURN_ZVAL(val, 1, 0);
 }
 
 /* Declare method entries for the Stackdriver\Trace\Context class */
 static zend_function_entry stackdriver_trace_context_methods[] = {
-    PHP_ME(StackdriverTraceContext, __construct, arginfo_StackdriverTraceContext_construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+    PHP_ME(StackdriverTraceContext, __construct,
+           arginfo_StackdriverTraceContext_construct,
+           ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(StackdriverTraceContext, spanId, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StackdriverTraceContext, traceId, NULL, ZEND_ACC_PUBLIC)
     PHP_FE_END
@@ -117,11 +123,16 @@ static zend_function_entry stackdriver_trace_context_methods[] = {
 int stackdriver_trace_context_minit(INIT_FUNC_ARGS) {
     zend_class_entry ce;
 
-    INIT_CLASS_ENTRY(ce, "Stackdriver\\Trace\\Context", stackdriver_trace_context_methods);
+    INIT_CLASS_ENTRY(ce, "Stackdriver\\Trace\\Context",
+                     stackdriver_trace_context_methods);
     stackdriver_trace_context_ce = zend_register_internal_class(&ce);
 
-    zend_declare_property_null(stackdriver_trace_context_ce, "spanId", sizeof("spanId") - 1, ZEND_ACC_PROTECTED TSRMLS_CC);
-    zend_declare_property_null(stackdriver_trace_context_ce, "traceId", sizeof("traceId") - 1, ZEND_ACC_PROTECTED TSRMLS_CC);
+    zend_declare_property_null(stackdriver_trace_context_ce, "spanId",
+                               sizeof("spanId") - 1, ZEND_ACC_PROTECTED
+                               TSRMLS_CC);
+    zend_declare_property_null(stackdriver_trace_context_ce, "traceId",
+                               sizeof("traceId") - 1, ZEND_ACC_PROTECTED
+                               TSRMLS_CC);
 
     return SUCCESS;
 }

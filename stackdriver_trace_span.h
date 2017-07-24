@@ -34,9 +34,12 @@ typedef struct stackdriver_trace_span_t {
     HashTable *labels;
 } stackdriver_trace_span_t;
 
-int stackdriver_trace_span_add_label(stackdriver_trace_span_t *span, zend_string *k, zend_string *v);
-int stackdriver_trace_span_add_label_str(stackdriver_trace_span_t *span, char *k, zend_string *v);
-int stackdriver_trace_span_apply_span_options(stackdriver_trace_span_t *span, zval *span_options);
+int stackdriver_trace_span_add_label(stackdriver_trace_span_t *span,
+                                     zend_string *k, zend_string *v);
+int stackdriver_trace_span_add_label_str(stackdriver_trace_span_t *span,
+                                         char *k, zend_string *v);
+int stackdriver_trace_span_apply_span_options(stackdriver_trace_span_t *span,
+                                              zval *span_options);
 stackdriver_trace_span_t *stackdriver_trace_span_alloc();
 void stackdriver_trace_span_free(stackdriver_trace_span_t *span);
 
